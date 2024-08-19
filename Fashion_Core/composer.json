@@ -1,0 +1,12 @@
+{
+    "name": "fashion_ai_hien/mylibrary",
+    "description": "This is the fashion store's library, built by Nhan Ai and Dieu Hien",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "FashionAiHien\\Mylibrary\\": "src/"
+        }
+    },
+    "require": {}
+}
