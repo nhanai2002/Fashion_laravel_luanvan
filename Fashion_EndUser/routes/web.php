@@ -6,9 +6,11 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ChatBotController;
 use App\Http\Controllers\LoginGoogleController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home.index');
+Route::get('/search', [HomeController::class, 'search']);
 
 Route::get('product/detail/{id}-{slug}.html',[HomeController::class, 'detail']);
 Route::get('/home/detail/updatePriceDetail',[HomeController::class, 'updatePriceDetail']);
@@ -46,6 +48,8 @@ Route::get('category/{id}-{slug}.html', [HomeController::class, 'showCategories'
 
 
 Route::middleware(['auth'])->group(function(){
+    Route::post('send-message',[ChatBotController::class, 'handle']);
+
     Route::get('logout',[AuthController::class, 'logout'])->name('custom.logout');
     Route::get('home/order-history/{status?}',[HomeController::class, 'orderHistory'])->name('home.order-history');
     Route::post('home/order-history/{status?}', [RatingController::class, 'store'])->name('reviews.store');

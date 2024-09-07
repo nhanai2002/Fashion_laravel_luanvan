@@ -83,15 +83,6 @@ function loadMore(){
     });
 }
 
-// const arrowElements = document.querySelectorAll('.arrow');
-// arrowElements.forEach(ar => {
-//     ar.addEventListener('click', function() {
-//     // Xóa class active khỏi tất cả các thẻ a
-//     arrowElements.forEach(l => l.classList.remove('active-arrow'));
-//         // Thêm class active cho thẻ a được click
-//         this.classList.add('active-arrow');
-//     });
-// });
 
 // Hàm để thêm thông báo mới
 function updateNotificationCount(){

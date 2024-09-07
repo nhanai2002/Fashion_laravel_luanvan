@@ -10,6 +10,7 @@ use FashionCore\Models\Coupon;
     // để nhận diện đc file này và không cần phải gọi từ đường dẫn ra nên t sẽ khai báo trong 
     // composer.json phần autoload
 
+    // view admin
     function categoryView($categories, $check_permissions, $parent_id = 0, $char=''){
         $html = '';
         
@@ -58,6 +59,7 @@ use FashionCore\Models\Coupon;
         return false;
     }
 
+    // view user
     function listCategoryView($categories, $parent_id = 0) : string
     {
         $html = '';

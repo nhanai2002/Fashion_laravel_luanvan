@@ -11,14 +11,16 @@ use FashionCore\Interfaces\ICategoryRepository;
 
 class CategoryController extends Controller
 {
-    public function __construct(protected ICategoryRepository $categoryRepo)
+    protected $categoryRepo;
+    
+    public function __construct(ICategoryRepository $categoryRepo)
     {
         $this->categoryRepo = $categoryRepo;
     }
 
     /**
      * @permission view_category
-     */
+    */
     public function index(){
         return view('category/index',[
             'title' => 'Danh sách danh mục',

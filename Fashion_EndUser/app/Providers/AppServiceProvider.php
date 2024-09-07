@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Http\View\Composers\ChatComposer;
 use App\Http\View\Composers\CategoryComposer;
 use App\Http\View\Composers\NotificationComposer;
 
@@ -87,6 +88,16 @@ class AppServiceProvider extends ServiceProvider
             \FashionCore\Interfaces\INotificationRepository::class,
             \FashionCore\Repositories\NotificationRepository::class,
         ); 
+
+        $this->app->singleton(
+            \FashionCore\Interfaces\IConversationRepository::class,
+            \FashionCore\Repositories\ConversationRepository::class,
+        );
+        $this->app->singleton(
+            \FashionCore\Interfaces\IMessageRepository::class,
+            \FashionCore\Repositories\MessageRepository::class,
+        );
+
     }
 
 
@@ -94,6 +105,7 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', CategoryComposer::class);
         View::composer('*', NotificationComposer::class);
+        View::composer('*', ChatComposer::class);
 
     }
 }

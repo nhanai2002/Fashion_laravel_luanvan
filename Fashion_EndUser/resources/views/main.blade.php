@@ -15,6 +15,8 @@
             @yield('header-order')
             @include('alert')
             @yield('content')
+            @include('chat')
+
         </div>
     </div>
 

@@ -5,11 +5,14 @@
                 <img src="/template/asset/image/logo.png" alt="logo">
                 <a href="/">AH FASHION</a>
             </div>
-            <form class="col-xs-3 col-sm-3 col-lg-3 search">
-                <input type="text" name="search" id="search" placeholder="Tìm kiếm sản phẩm">
+            <form action="/search" class="col-xs-3 col-sm-3 col-lg-3 search">
+                <input type="text" name="keyword" id="search" placeholder="Tìm kiếm sản phẩm" autocomplete="off">
                 <button type="submit">
                     <i class="fa fa-search" aria-hidden="true" style="top:29px"></i>
                 </button>
+                <div class="search-history" id="search-history">
+                    <!-- Lịch sử tìm kiếm sẽ được thêm vào đây -->
+                </div>          
             </form>
             
             <div class="col-xs-3 col-sm-3 col-lg-3 cart">

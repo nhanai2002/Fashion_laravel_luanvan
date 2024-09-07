@@ -232,7 +232,7 @@
             <div class="item-product">
                 <img src="{{$product->images->first()->url}}"><br>
                 <div>
-<div class="name-product">
+    <div class="name-product">
                         <p>{{ $product->name }}</p><br>
                     </div>
                     <div class="price-product"> 

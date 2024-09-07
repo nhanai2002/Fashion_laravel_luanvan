@@ -43,11 +43,17 @@
                     <i class="fa-solid fa-user-ninja"></i>
                 </a>
                 @endif
+                {{-- @if($customer->username != 'admin' && hasPermission('edit_users', $check_permissions)) --}}
+                <a class="btn btn-info btn-sm chat-button" data-user-id="{{ $customer->id }}">
+                    <i class="fa-regular fa-comments"></i>
+                </a>
+                {{-- @endif --}}
                 @if($customer->username != 'admin' && hasPermission('edit_users', $check_permissions))
-                <a class="btn btn-primary btn-sm" href="/admin/customer/edit/{{ $customer->id }}">
+                <a class="btn btn-primary btn-sm" href="/admin/customer/edit/{{ $customer->id}}">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </a>
                 @endif
+                
                 {{-- <a href="javascript:void(0)" onclick="changeStatus({{ $customer->id }}, '/admin/customer/block')" class="btn btn-warning btn-sm" title="Khóa tài khoản">
                     <i class="fa-solid fa-lock"></i>
                 </a> --}}

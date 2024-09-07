@@ -94,7 +94,7 @@
                     </div>
                     <div class="option ">
                         <div class="view-details">
-                            <a  href="/product/detail/{{ $product->id }}-{{ Str::slug($product->name, '-') }}.html" >
+                            <a  href="/product/detail/{{ $product->id }}-{{Str::slug($product->name)}}.html" >
                                 <i class="fa fa-eye" aria-hidden="true"></i>
                                 Xem chi tiết
                             </a>

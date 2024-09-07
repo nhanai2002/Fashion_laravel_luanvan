@@ -10,6 +10,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CouponController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ChatController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
@@ -164,6 +165,15 @@ Route::middleware(['auth', 'checkRole', 'checkPermission'])->group(function(){
             Route::post('send-notification', [NotificationController::class, 'sendNotification']); 
  
         });
+
+        Route::prefix('chat')->group(function(){
+            Route::get('view-chat/{user}',[ChatController::class, 'getConversation']);
+            Route::post('change-status',[ChatController::class, 'changeStatusTakeOver']);
+            Route::post('send-message',[ChatController::class, 'sendMessage']);
+
+        });
+
+
 
     });
 });

@@ -44,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             addNewNotification(e.notification);
         }
     );
+
 });
 
 window.Echo.connector.pusher.connection.bind('state_change', (states) => {

@@ -7,6 +7,8 @@ use FashionCore\Helpers\Helper;
 use FashionCore\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Redis;
 use FashionCore\Interfaces\ISizeRepository;
 use FashionCore\Interfaces\IColorRepository;
 use FashionCore\Interfaces\IOrderRepository;
@@ -14,6 +16,7 @@ use FashionCore\Interfaces\IProductRepository;
 use FashionCore\Interfaces\ICategoryRepository;
 use FashionCore\Interfaces\IOrderItemRepository;
 use FashionCore\Interfaces\IWarehouseItemRepository;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {   protected $productRepo;
@@ -36,36 +39,103 @@ class HomeController extends Controller
         $this->orderItemRepo = $orderItemRepo;
     }
 
-    public function index(Request $request){
-        $search = $request->input('search');
-        $products = Product::where('status', 1)->whereHas('warehouse_items');
-        $products= Product::distinct()
-            ->select('products.id','products.name')
-            ->rightJoin('warehouse_items', function ($join) {
-                $join->on('products.id', '=', 'warehouse_items.product_id')
-                ; 
-        })->where('products.status', 1);
-        if(!empty($search)){
-            $products = $products->where(function ($query) use ($search) {
-                $query->where('name', 'like', '%'.$search.'%')
-                      ->orWhere('code', 'like', '%'.$search.'%');
+    public function index(){
+        $perPage = 12;
+        // lấy 12 sp truy cập nhìu nhất
+        $topProductIds = Redis::zrevrange('product_views', 0, $perPage - 1);  
+        
+        if (!empty($topProductIds)) {
+            $cacheKey = "top_products";
+            $ids = implode(',', $topProductIds);
+            $products = Cache::remember($cacheKey, 60, function () use ($topProductIds, $perPage, $ids) {
+                return $this->productRepo->buildQuery(['status' => 1])
+                    ->whereIn('id', $topProductIds)
+                    ->orderByRaw("FIELD(id, {$ids}) ASC") 
+                    ->limit($perPage)
+                    ->get();
+            });  
+
+            if ($products->count() < $perPage) {
+                $additionalProducts = $this->productRepo->buildQuery(['status' => 1 ])
+                    ->whereNotIn('id', $topProductIds)
+                    ->orderBy('created_at', 'desc')
+                    ->limit($perPage - $products->count())
+                    ->get();
+                $products = $products->merge($additionalProducts);
+            }       
+        } else {
+            // Nếu trong redis ko có, lấy 12 sp đầu tiên từ db và lưu vào cache
+            $cacheKey = 'default_product_list';
+
+            $products = Cache::remember($cacheKey, 60, function () use ($perPage) {
+                return $this->productRepo->buildQuery(['status' => 1])
+                    ->orderBy('created_at', 'desc')
+                    ->limit($perPage)
+                    ->get();
             });
         }
-        $products = $products->orderBy('sell_price','asc')->limit(12)->get();
-        return view('/home/index',[
+        return view('home.index', [
+            'title' => 'Trang chủ',
+            'products' => $products
+        ]);
+    }
+
+    public function search(Request $request){
+        $keyword = $request->input('keyword');
+        
+        $cacheKey = "search_products_{$keyword}";
+        $perPage = 12;
+        $products = Cache::remember($cacheKey, 60, function () use ($keyword, $perPage) {
+            $query = $this->productRepo->buildQuery(['status' => 1])->whereHas('warehouse_items');
+            if(!empty($keyword)){
+                $query->where(function($query) use ($keyword){
+                    $query->where('name', 'like', '%'.$keyword.'%')
+                        ->orWhere('code', 'like', '%'.$keyword.'%');
+                });
+            }
+            return $query->paginate($perPage);
+        });
+        return view('home.index', [
             'title' => 'Trang chủ',
             'products' => $products
         ]);
     }
 
     public function detail($id, $slug = ''){
-        $product = $this->productRepo->buildQuery(['id' => $id])
-        ->with(['warehouse_items', 'ratings']) // Thêm 'ratings' để lấy đánh giá
-        ->first();
-        $list_products = Product::where('status', 1)->whereHas('warehouse_items')->limit(8);
+        $cacheKey = "product_details_{$id}";
+
+        $product = Cache::remember($cacheKey, 60 , function () use($id){
+            return $this->productRepo->buildQuery(['id' => $id])
+            ->with(['warehouse_items', 'ratings'])
+            ->first();
+        });
+        
         if($product == null || $product->warehouse_items->count() == 0){
             return redirect()->back();
         }
+
+        Redis::zincrby('product_views', 1, $id);        // tăng điểm số trong sorted set (tính lượt truy cập)
+        $perPage = 8;
+
+        $leastViewedProductIds = Redis::zrange('product_views', 0, $perPage - 1);        // ít đc truy cập nhất
+        $list_products = [];
+        if(!empty($leastViewedProductIds)){
+            $list_products = Cache::remember('bot_products',60 , function () use ($leastViewedProductIds , $perPage){
+                return $this->productRepo->buildQuery(['status'=> 1])       
+                ->whereHas('warehouse_items')
+                ->whereIn('id', $leastViewedProductIds)->limit($perPage)
+                ->get();
+            });
+            if($list_products->count() < $perPage){
+                $addProduct = $this->productRepo->buildQuery(['status'=> 1])
+                    ->whereHas('warehouse_items')
+                    ->whereNotIn('id', $leastViewedProductIds)
+                    ->limit($perPage - $list_products->count())
+                    ->get();
+                $list_products = $list_products->merge($addProduct);
+            }
+        }
+        
         $ratings = $product->ratings;
         
         // Tính tổng số đánh giá
@@ -76,7 +146,7 @@ class HomeController extends Controller
         return view('home/detail',[
             'title' => 'Chi tiết sản phẩm',
             'product' => $product,
-            'list_products' => $list_products->get(),
+            'list_products' => $list_products,
             'warehouse_items' => $product->warehouse_items,
             'sizes'=>$this->sizeRepo->getAll(),
             'colors' => $this->colorRepo->getAll(),

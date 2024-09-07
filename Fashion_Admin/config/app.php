@@ -153,6 +153,7 @@ return [
         App\Providers\RouteServiceProvider::class,
         CloudinaryLabs\CloudinaryLaravel\CloudinaryServiceProvider::class,
         Barryvdh\DomPDF\ServiceProvider::class,
+        App\Providers\BotManServiceProvider::class,
     ])->toArray(),
 
 

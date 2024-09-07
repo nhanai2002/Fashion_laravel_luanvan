@@ -229,3 +229,75 @@ function addNewNotification(notification){
         }, 500);
     }, 500);
 }
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search');
+    const searchHistory = document.getElementById('search-history');
+
+    // Hiển thị lịch sử tìm kiếm khi ô input được focus
+    searchInput.addEventListener('focus', function() {
+        // Hiển thị lịch sử tìm kiếm
+        renderSearchHistory();
+        searchHistory.style.display = 'block';
+    });
+
+    // Ẩn lịch sử tìm kiếm khi click ra ngoài
+    document.addEventListener('click', function(event) {
+        if (!searchInput.contains(event.target) && !searchHistory.contains(event.target)) {
+            searchHistory.style.display = 'none';
+        }
+    });
+
+    // Xử lý khi click vào một mục trong lịch sử tìm kiếm
+    searchHistory.addEventListener('click', function(event) {
+        if (event.target.classList.contains('search-history-item')) {
+            searchInput.value = event.target.textContent;
+            searchInput.form.submit(); // Gửi form
+        }
+        setTimeout(function() {
+            scrollToResults();
+        }, 500); 
+    });
+
+    function scrollToResults() {
+        const resultsContainer = document.getElementById('product-list');
+        if (resultsContainer) {
+            resultsContainer.scrollIntoView({
+                behavior: 'smooth', // Thêm hiệu ứng cuộn mượt mà
+                block: 'start' // Cuộn đến đầu phần tử
+            });
+        }
+    }
+});
+
+function saveSearchKeyword(keyword) {
+    const maxHistoryLength = 5; 
+    let searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+
+    // Thêm từ khóa vào lịch sử nếu không có
+    if (!searchHistory.includes(keyword)) {
+        searchHistory.unshift(keyword); // Thêm vào đầu mảng
+        // Giới hạn lịch sử tìm kiếm
+        if (searchHistory.length > maxHistoryLength) {
+            searchHistory.pop(); // Xóa từ khóa cũ nhất nếu quá giới hạn
+        }
+        localStorage.setItem('searchHistory', JSON.stringify(searchHistory));
+    }
+}
+
+function renderSearchHistory() {
+    const searchHistory = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    const searchHistoryList = document.getElementById('search-history');
+    
+    // Xóa tất cả các mục hiện có
+    searchHistoryList.innerHTML = '';
+    
+    // Thêm các mục mới vào lịch sử tìm kiếm
+    searchHistory.forEach(function(keyword) {
+        const listItem = document.createElement('div');
+        listItem.className = 'search-history-item';
+        listItem.textContent = keyword;
+        searchHistoryList.appendChild(listItem);
+    });
+}

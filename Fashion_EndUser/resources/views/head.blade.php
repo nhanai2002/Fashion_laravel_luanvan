@@ -15,6 +15,7 @@
     <script src="/template/asset/js/subnavDetails.js"></script>
     <script src="/template/asset/js/checkSizeColor.js"></script>
     <script src="/template/asset/js/rating.js"></script>
+    <script src="/template/asset/js/chat.js"></script>
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
@@ -25,6 +26,7 @@
 
     @vite(['resources/js/bootstrap.js'])
     <meta name="user-id" content="{{ Auth::id() }}">
+    <meta name="conservation-id" content="{{  $conversation ? $conversation->id : ''}}">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>

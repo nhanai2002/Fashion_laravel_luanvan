@@ -8,6 +8,7 @@ use FashionCore\Models\Product;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 use FashionCore\Interfaces\IImageRepository;
@@ -74,7 +75,7 @@ class ProductController extends Controller
             foreach ($images as $image) {
                 $validator = Validator::make(
                     ['image' => $image],
-                    ['image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048']
+                    ['image' => 'image|mimes:jpeg,png,jpg|max:2048']
                 );
     
                 if ($validator->fails()) {
@@ -83,15 +84,16 @@ class ProductController extends Controller
             }    
         }
 
-
         try{
             DB::beginTransaction();
+            $product_name = $request->input('name');
             $product = $this->productRepo->add([
                 'code' => $request->input('code'),
-                'name' => $request->input('name'),
+                'name' => $product_name,
                 'description' => $request->input('description'),
                 'status' => 0,
                 'category_id' => $request->input('category_id'),
+                'slug' => Str::slug($product_name, '-')
             ]);
             if($product){
                 if($request->hasFile('images')){
@@ -160,7 +162,6 @@ class ProductController extends Controller
             ]);
         }
         catch (\Exception $e){
-            echo $e->getMessage();
             return response()->json([
                 'error' => true
             ]);
@@ -172,9 +173,20 @@ class ProductController extends Controller
     * @permission edit_product
     */
     public function show(Product $product){
+        $id = $product->id;
+        $productCacheKey = "product_details_admin_{$id}";
+        $categoryCacheKey = "category_admin";
+        
+        $product = Cache::remember($productCacheKey, 60 , function () use($id){
+            return $this->productRepo->buildQuery(['id' => $id])
+            ->first();
+        });
+        $categories = Cache::remember($categoryCacheKey, 60, function () {
+            return $this->categoryRepo->getAll();
+        });
         return view('/product/edit',[
             'title' => 'Sửa sản phẩm',
-            'categories' =>$this->categoryRepo->getAll(),
+            'categories' =>$categories,
             'product' => $product,
             'images'=> $product->images(),
         ]);
@@ -183,11 +195,13 @@ class ProductController extends Controller
     public function update(Request $request, Product $product){
         try{
             DB::beginTransaction();
+            $product_name = $request->input('name');
             $product = $this->productRepo->update($product->id, [
-                'name' => $request->input('name'),
+                'name' => $product_name,
                 'description' => $request->input('description'),
                 'status' => 0,
                 'category_id' => $request->input('category_id'),
+                'slug' => Str::slug($product_name, '-')
             ]);
             if($product){
                 if($request->hasFile('images')){
@@ -210,6 +224,8 @@ class ProductController extends Controller
                     }
                 }        
             }
+            Cache::forget("product_details_{$product->id}");
+            Cache::forget("product_details_admin_{$product->id}");
             DB::commit();
             Session::flash('success','Cập nhật thành công!');
         }

@@ -10,13 +10,14 @@
             @include('alert')
 
             @yield('content')
+            @include('chat')
         </div>
         </div>
     </div>
 
    
    
-   <script>
+   {{-- <script>
          var menu = document.querySelectorAll('#dropdown > li');
         // Lặp qua từng menu để gán sự kiện click
         for (var i = 0; i < menu.length; i++)
@@ -30,7 +31,7 @@
                 this.children[1].style.display = "grid";
             });
         }
-    </script>
+    </script> --}}
     @include('footer')
     @yield('footer')
 

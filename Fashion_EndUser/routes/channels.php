@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
@@ -21,4 +22,8 @@ Broadcast::channel('send-all', function ($user) {
 
 Broadcast::channel('user-channel-{userId}', function ($user, $userId) {
     return (int)$user->id == (int)$userId;
+});
+
+Broadcast::channel('conversation.{conversationId}', function ($user, $conversationId) {
+    return Auth::check();
 });

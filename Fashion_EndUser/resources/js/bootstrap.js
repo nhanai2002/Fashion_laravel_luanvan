@@ -44,6 +44,16 @@ document.addEventListener('DOMContentLoaded', function() {
             addNewNotification(e.notification);
         }
     );
+
+
+    const metaTag = document.querySelector('meta[name="conservation-id"]');
+    const conversationId = metaTag ? metaTag.getAttribute('content') : null;
+
+    window.Echo.private('conversation.' + conversationId)
+        .listen('.MessageSentEvent', function (event) {
+            updateChatWindow(event);
+        });
+
 });
 
 
@@ -58,4 +68,5 @@ window.Echo.connector.pusher.connection.bind('error', (error) => {
 window.Echo.connector.pusher.connection.bind('ping', () => {
     console.log('Pusher ping');
 });
+
 

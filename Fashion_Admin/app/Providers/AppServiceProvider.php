@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Http\View\Composers\ChatComposer;
 use App\Http\View\Composers\PermissionComposer;
 use App\Http\View\Composers\NotificationComposer;
 
@@ -78,14 +79,22 @@ class AppServiceProvider extends ServiceProvider
             \FashionCore\Repositories\NotificationRepository::class,
         );
         $this->app->singleton(
-            \FashionCore\Interfaces\INotificationRoleRepository::class,
-            \FashionCore\Repositories\NotificationRoleRepository::class,
-        );
-        $this->app->singleton(
             \FashionCore\Interfaces\INotificationUserRepository::class,
             \FashionCore\Repositories\NotificationUserRepository::class,
         );
 
+        $this->app->singleton(
+            \FashionCore\Interfaces\IConversationRepository::class,
+            \FashionCore\Repositories\ConversationRepository::class,
+        );
+        $this->app->singleton(
+            \FashionCore\Interfaces\IMessageRepository::class,
+            \FashionCore\Repositories\MessageRepository::class,
+        );
+        $this->app->singleton(
+            \FashionCore\Interfaces\IHistoryTakeoverRepository::class,
+            \FashionCore\Repositories\HistoryTakeoverRepository::class,
+        );
     }
 
 
@@ -93,5 +102,6 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('*', PermissionComposer::class);
         View::composer('*', NotificationComposer::class);
+        View::composer('*', ChatComposer::class);
     }
 }

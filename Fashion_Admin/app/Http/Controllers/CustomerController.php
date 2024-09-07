@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use FashionCore\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use FashionCore\Interfaces\IRoleRepository;
 use FashionCore\Interfaces\IUserRepository;
@@ -33,7 +34,7 @@ class CustomerController extends Controller
             });
         }
 
-        $users =  $query->with('role')->get();
+        $users =  $query->with('role')->get()->except(Auth::id());
         return view('customer/index',[
             'title' => 'Danh sách khách hàng',
             'customers' => $users
